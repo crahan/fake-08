@@ -72,7 +72,7 @@ ifeq ($(platform), unix)
 	EXT ?= so
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined -s
 else ifeq ($(platform), linux-portable)
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
    fpic := -fPIC -nostdlib
@@ -103,11 +103,11 @@ endif
 else ifneq (,$(findstring qnx,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_qnx.so
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined -s
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_emscripten.bc
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined -s
 else ifeq ($(platform), vita)
    TARGET := $(TARGET_NAME)_vita.a
    CC = arm-vita-eabi-gcc
@@ -183,11 +183,11 @@ endif
 
 %.o: %.c
 	@$(if $(Q), $(shell echo echo CC $<),)
-	$(Q)$(CXX) $(CFLAGS) $(fpic) -c -o $@ $<
+	$(Q)$(CXX) $(CFLAGS) $(fpic) -x c++ -c -o $@ $<
 
 %.o: %.cpp
 	@$(if $(Q), $(shell echo echo CXX $<),)
-	$(Q)$(CXX) $(CFLAGS) $(fpic) -c -o $@ $<
+	$(Q)$(CXX) $(CFLAGS) $(fpic) -x c++ -c -o $@ $<
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
