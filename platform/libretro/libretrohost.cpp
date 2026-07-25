@@ -27,7 +27,12 @@ static uint8_t stubMouseBtns;
 std::string _currentCartDirectory;
 
 void setInputState(uint8_t kDown, uint8_t kHeld, int16_t mouseX, int16_t mouseY, uint8_t mouseBtns) {
-    stubCurrKDown = kDown;
+    // Latch just-pressed edges instead of overwriting. retro_run pushes input
+    // every host frame (60Hz), but a 30fps cart only reads it (scanInput) every
+    // other frame, so overwriting would clear the edge before the cart sees it
+    // and btnp() would drop presses. The edge is cleared in scanInput when the
+    // cart actually consumes it, so it survives exactly until it is read once.
+    stubCurrKDown |= kDown;
     stubCurrKHeld = kHeld;
     stubMouseX = mouseX;
     stubMouseY = mouseY;
@@ -66,7 +71,11 @@ void Host::forceStretch(StretchOption newStretch) {
 
 
 InputState_t Host::scanInput(){
-    return InputState_t {stubCurrKDown, stubCurrKHeld, stubMouseX, stubMouseY, stubMouseBtns, stubCurrKBdown, stubCurrKBkey};
+    InputState_t state {stubCurrKDown, stubCurrKHeld, stubMouseX, stubMouseY, stubMouseBtns, stubCurrKBdown, stubCurrKBkey};
+    //the just-pressed edge has now been consumed by the cart; clear the latch so
+    //it fires exactly once regardless of host vs cart frame rate.
+    stubCurrKDown = 0;
+    return state;
 }
 
 bool Host::shouldQuit() {
