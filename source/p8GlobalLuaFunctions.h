@@ -215,19 +215,18 @@ __f08_menu_items = {
     {nil, nil},
     {nil, nil},
     {nil, nil},
-    {nil, nil},
-    {"reset cart", __resetcart},
-    {"exit to menu", __loaddefaultcart},
-    {"exit to settings", __loadsettingscart}
+    {nil, nil}
 }
 
 __f08_menu_selected = 0
 
 function __f08_menu_update()
-    if btnp(3) and __f08_menu_selected < #__f08_menu_items then
-        repeat
-            __f08_menu_selected = __f08_menu_selected + 1
-        until __f08_menu_items[__f08_menu_selected][1] ~= nil
+    if btnp(3) then
+        -- scan downward for the next non-empty entry, bounded so it can't run
+        -- off the end (there is no longer a guaranteed entry at the bottom)
+        local n = __f08_menu_selected
+        repeat n = n + 1 until n > #__f08_menu_items or __f08_menu_items[n][1] ~= nil
+        if n <= #__f08_menu_items then __f08_menu_selected = n end
     end
 
     if btnp(2) and __f08_menu_selected > 0 then
