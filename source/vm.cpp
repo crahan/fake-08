@@ -527,6 +527,12 @@ void Vm::togglePauseMenu(){
         memcpy(_drawStateCopy, &_memory->drawState, 64);
 
         _graphics->pal();
+        // Preserve the cart's screen (display) palette. pal() above reset it to
+        // identity, which re-colors the frozen game frame shown behind the menu
+        // (Marble Merger / any cart using the extended display palette). Only the
+        // DRAW palette should be reset so the menu's color indices map predictably;
+        // the display palette stays as the cart left it.
+        memcpy(_memory->drawState.screenPaletteMap, &_drawStateCopy[16], sizeof(_memory->drawState.screenPaletteMap));
         _graphics->fillp(0);
         _graphics->clip();
         _graphics->camera();
