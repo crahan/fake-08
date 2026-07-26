@@ -41,6 +41,10 @@ class Vm {
     bool _cartChangeQueued;
     bool _pauseMenu;
     bool _clearInputOnResume;
+    // Screen-space rect of the pause-menu box (x0,y0,x1,y1) reported by the Lua
+    // menu draw. Inside this rect the display uses the default palette so the
+    // menu shows standard PICO-8 colors regardless of the cart's screen palette.
+    int16_t _menuOverlayBounds[4] = {0, 0, 0, 0};
     string _prevCartKey;
     string _nextCartKey;
     const unsigned char* _nextCartData;
@@ -111,6 +115,12 @@ class Vm {
 
     void togglePauseMenu();
     bool IsPaused();
+
+    // Pause-menu overlay region: the Lua menu draw reports its box so the
+    // renderer can draw that rect with the default palette (standard menu
+    // colors) while the rest of the frame keeps the cart's screen palette.
+    void setMenuOverlayBounds(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
+    bool getMenuOverlayBounds(int16_t& x0, int16_t& y0, int16_t& x1, int16_t& y1);
 
     std::string getSerializedCartData();
     void deserializeCartDataToMemory(std::string cartDataStr);

@@ -56,6 +56,7 @@ bool _initializeLuaState(lua_State* luaState) {
     lua_register(luaState, "__loadsettingscart", loadsettingscart);
     lua_register(luaState, "__togglepausemenu", togglepausemenu);
     lua_register(luaState, "__ispaused", ispaused);
+    lua_register(luaState, "__f08_menu_bounds", menuoverlaybounds);
     lua_register(luaState, "__resetcart", resetcart);
     lua_register(luaState, "__load", load);
 	
@@ -556,6 +557,21 @@ void Vm::togglePauseMenu(){
 
 bool Vm::IsPaused(){
     return _pauseMenu;
+}
+
+void Vm::setMenuOverlayBounds(int16_t x0, int16_t y0, int16_t x1, int16_t y1){
+    _menuOverlayBounds[0] = x0;
+    _menuOverlayBounds[1] = y0;
+    _menuOverlayBounds[2] = x1;
+    _menuOverlayBounds[3] = y1;
+}
+
+bool Vm::getMenuOverlayBounds(int16_t& x0, int16_t& y0, int16_t& x1, int16_t& y1){
+    x0 = _menuOverlayBounds[0];
+    y0 = _menuOverlayBounds[1];
+    x1 = _menuOverlayBounds[2];
+    y1 = _menuOverlayBounds[3];
+    return x1 > x0 && y1 > y0;
 }
 
 

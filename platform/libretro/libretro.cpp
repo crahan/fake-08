@@ -414,6 +414,13 @@ EXPORT void retro_run()
     uint8_t* picoFb = _vm->GetPicoInteralFb();
     uint8_t* screenPaletteMap = _vm->GetScreenPaletteMap();
 
+    // Pause-menu overlay: inside the reported menu box, draw with the default
+    // palette so the menu shows standard PICO-8 colors regardless of the cart's
+    // screen palette. Outside the box the cart's screen palette is used, so the
+    // frozen game behind the menu keeps its own colors.
+    int16_t mbx0 = 0, mby0 = 0, mbx1 = 0, mby1 = 0;
+    bool menuOverlay = _vm->IsPaused() && _vm->getMenuOverlayBounds(mbx0, mby0, mbx1, mby1);
+
     drawMode = _memory->drawState.drawMode;
 
     drawModeScaleX = 1;
@@ -481,8 +488,10 @@ EXPORT void retro_run()
             for (unsigned scrx = 0; scrx < width; scrx++) {
                 int picox = (scrx + crop_h_left) / drawModeScaleX;
                 int picoy = (scry + crop_v_top) / drawModeScaleY;
-                uint16_t color = _rgb565Colors[screenPaletteMap[getPixelNibble(picox, picoy, picoFb)] & 0x8f];
-                
+                uint8_t nib = getPixelNibble(picox, picoy, picoFb);
+                bool inMenu = menuOverlay && picox >= mbx0 && picox <= mbx1 && picoy >= mby0 && picoy <= mby1;
+                uint16_t color = _rgb565Colors[(inMenu ? nib : screenPaletteMap[nib]) & 0x8f];
+
                 for (int y = 0; y < scale; y++) {
                     for (int x = 0; x < scale; x++) {
                         screenBuffer2x[(scry*scale+y)*width*scale+scrx*scale+x] = color;
@@ -498,7 +507,9 @@ EXPORT void retro_run()
             for (unsigned scrx = 0; scrx < width; scrx++) {
                 int picox = (scrx + crop_h_left) / drawModeScaleX;
                 int picoy = (scry + crop_v_top) / drawModeScaleY;
-                screenBuffer[scry*width+scrx] = _rgb565Colors[screenPaletteMap[getPixelNibble(picox, picoy, picoFb)] & 0x8f];
+                uint8_t nib = getPixelNibble(picox, picoy, picoFb);
+                bool inMenu = menuOverlay && picox >= mbx0 && picox <= mbx1 && picoy >= mby0 && picoy <= mby1;
+                screenBuffer[scry*width+scrx] = _rgb565Colors[(inMenu ? nib : screenPaletteMap[nib]) & 0x8f];
             }
         }
 

@@ -104,6 +104,7 @@ int loaddefaultcart(lua_State *L);
 int loadsettingscart(lua_State *L);
 int togglepausemenu(lua_State *L);
 int ispaused(lua_State *L);
+int menuoverlaybounds(lua_State *L);
 int resetcart(lua_State *L);
 
 //settings functions

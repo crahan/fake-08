@@ -1457,6 +1457,18 @@ int ispaused(lua_State *L) {
 
     return 1;
 }
+int menuoverlaybounds(lua_State *L) {
+    // Reported by the Lua pause-menu draw: the box rect (x0,y0,x1,y1) that the
+    // renderer should draw with the default palette (standard menu colors).
+    int16_t x0 = lua_tonumber(L, 1);
+    int16_t y0 = lua_tonumber(L, 2);
+    int16_t x1 = lua_tonumber(L, 3);
+    int16_t y1 = lua_tonumber(L, 4);
+
+    _vmForLuaApi->setMenuOverlayBounds(x0, y0, x1, y1);
+
+    return 0;
+}
 
 int resetcart(lua_State *L) {
     _vmForLuaApi->QueueCartChange(_vmForLuaApi->CurrentCartFilename());

@@ -278,6 +278,11 @@ function __f08_menu_draw()
     local menux = (128 - menuwidth) / 2
     local menuy = (128 - menuheight) / 2
 
+    -- Report the menu box so the renderer can draw this rect with the default
+    -- palette (standard PICO-8 menu colors) even when the cart uses a custom
+    -- screen palette, while the game behind keeps its own colors.
+    __f08_menu_bounds(menux, menuy, menux + menuwidth, menuy + menuheight)
+
     rectfill(menux, menuy, menux + menuwidth, menuy + menuheight, 0)
     rect(menux+1, menuy+1, menux + menuwidth-1, menuy + menuheight-1, 7)
     local itemx = menux + 8
