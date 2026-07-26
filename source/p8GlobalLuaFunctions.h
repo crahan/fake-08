@@ -603,7 +603,15 @@ function __z8_tick()
     if __ispaused() then
         _update_buttons()
         __f08_menu_update()
+        -- Draw the menu in the default font. A cart's custom font (0x5f58 enable
+        -- / 0x5f59 char size) would otherwise render the menu text garbled and
+        -- oversized. Save and restore around the draw so the cart keeps its font
+        -- on resume. This runs every paused frame, after the cart has stopped, so
+        -- the cart's own _update can't clobber it.
+        local _pa, _pcd = peek(0x5f58), peek(0x5f59)
+        poke(0x5f58, 0) poke(0x5f59, 0)
         __f08_menu_draw()
+        poke(0x5f58, _pa) poke(0x5f59, _pcd)
         return 0
     end
 
