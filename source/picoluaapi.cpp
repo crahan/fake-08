@@ -663,8 +663,19 @@ int pal(lua_State *L) {
 
         return 0;
     } else if (numArgs == 1) {
+        // pal(nil) must behave like pal() and reset BOTH the draw and screen
+        // palettes (PICO-8 semantics). Without this, a single nil argument fell
+        // through to lua_tonumber(nil)==0 -> pal(0), which only resets the draw
+        // palette. Carts that blank the screen via memset(0x5f10,0,16) and rely
+        // on pal(nil) in _draw to restore it (e.g. R-Type) rendered all black.
+        if (lua_isnoneornil(L, 1)) {
+            _graphicsForLuaApi->pal();
+
+            return 0;
+        }
+
         p = lua_tonumber(L, 1);
-        
+
         _graphicsForLuaApi->pal(p);
 
         return 0;
