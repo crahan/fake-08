@@ -1487,7 +1487,24 @@ std::string Vm::getLuaLine(string filename, int linenumber) {
 }
 
 
+// RAII guard: pause Lua's incremental GC for this scope and restart it on exit.
+// Eris does not stop the GC during persist/unpersist -- it relies on stack-anchoring,
+// and a gap lets the collector free a half-built object mid-unpersist, crashing on
+// large savestates (e.g. R-Type). Pausing the GC across the eris call removes that
+// window. The restart lives in the destructor so it runs on every return path and
+// can never be skipped (a missed restart would leave the GC off -> memory growth).
+namespace {
+    struct GcPause {
+        lua_State* L;
+        explicit GcPause(lua_State* L_) : L(L_) { lua_gc(L, LUA_GCSTOP, 0); }
+        ~GcPause() { lua_gc(L, LUA_GCRESTART, 0); }
+        GcPause(const GcPause&) = delete;
+        GcPause& operator=(const GcPause&) = delete;
+    };
+}
+
 size_t Vm::serializeLuaState(char* dest) {
+    GcPause gcPause(_luaState);
     lua_getglobal(_luaState, "eris");
 	lua_getfield(_luaState, -1, "persist_all");
 
@@ -1506,6 +1523,7 @@ size_t Vm::serializeLuaState(char* dest) {
 }
 
 void Vm::deserializeLuaState(const char* src, size_t len) {
+    GcPause gcPause(_luaState);
     lua_getglobal(_luaState, "eris");
 	lua_getfield(_luaState, -1, "restore_all");
 	lua_pushlstring(_luaState, src, len);
