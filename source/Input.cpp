@@ -51,7 +51,14 @@ void Input::SetState(uint8_t kdown, uint8_t kheld){
             (_framesHeld[i] == repeatDelay) ||
             (_framesHeld[i] / repeatDelay >= 1 && _framesHeld[i] % repeatInterval == 0);
 
-        if (repeatPressed) {
+        // The pause button (6) must not auto-repeat. Holding it would otherwise
+        // re-fire btnp(6) every repeatInterval frames and toggle the pause menu
+        // over and over ("goes away and immediately comes back"). On carts with a
+        // custom menu palette (e.g. UFO Swamp Oddysey) the rapid re-toggling also
+        // made the menu colors flicker back to default. This honors the "key 6
+        // only fires for one frame, even if held" rule enforced for btn(6) above,
+        // extending it to btnp(6).
+        if (repeatPressed && i != 6) {
             _currentKDown = _currentKDown | BITMASK(i);
         }
     }
