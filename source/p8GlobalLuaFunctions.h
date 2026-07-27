@@ -266,6 +266,13 @@ function __f08_menu_update()
 end
 
 function __f08_menu_draw()
+    -- Reset camera and clip before drawing. The menu uses screen-centered
+    -- coordinates, but a cart leaves its own camera/clip set from its last _draw
+    -- (which runs on the frame the menu opens), and the paused menu inherits it --
+    -- so in scrolling games (R-Type, Birds With Guns) the menu slid off-screen
+    -- with the camera. Resetting here keeps the menu centred and fully visible;
+    -- togglePauseMenu restores the cart's draw state on close.
+    camera() clip()
     local menuwidth = 82
     local itemcount = 0
     for i=0, 8, 1 do
